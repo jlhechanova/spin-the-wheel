@@ -33,10 +33,20 @@
 
           ctx.save();
           ctx.rotate(i * (end - start) + (end - start) / 2);
-          ctx.font = "24px Nunito";
+          ctx.font = "600 extra-condensed 2rem Nunito";
           ctx.textBaseline = "middle";
           ctx.fillStyle = `rgb(${items[i].textColor}`;
-          ctx.fillText(items[i].value, 300 - ctx.measureText(items[i].value).width, 0);
+
+          let textWidth = ctx.measureText(items[i].value).width;
+          if (textWidth < 244) {
+            ctx.fillText(items[i].value, 300 - textWidth, 0);
+          } else {
+            let k = 10;
+            while (ctx.measureText(items[i].value.slice(0,k)).width < 244) {
+              k += 1;
+            }
+            ctx.fillText(items[i].value.slice(0, k-1) + '...', 56, 0);
+          }
           ctx.restore();
         }
       }
@@ -48,7 +58,7 @@
     if (items.length > 0) {
       let sliceSize = 360 / items.length; // degrees
       choice = Math.floor(Math.random() * items.length);
-      arc = 3600 + (items.length - choice - 1) * sliceSize + Math.random() * sliceSize;
+      arc = 7200 + (items.length - choice - 1) * sliceSize + Math.random() * sliceSize;
       console.log(items[choice].value);
       isSpinning = true;
     }
@@ -84,7 +94,7 @@
     YOU GOT
   </h2>
   <div class="winnermodal">
-    <span class="winnertext">{items[choice]?.value}</span>
+    <p class="winnertext">{items[choice]?.value}</p>
   </div>
 </Modal>
 
@@ -99,6 +109,7 @@
     border-radius: 100%;
     border-width: 0.125rem;
     box-shadow: 0 0 5px 2px #aaa;
+    pointer-events: none;
   }
 
   button {
@@ -198,8 +209,9 @@
   }
 
   .winnermodal {
-    height: 12rem;
-    width: 32rem;
+    min-height: 12rem;
+    min-width: 32rem;
+    max-width: 44rem;
     display: flex;
     justify-content: center;
     align-items: center;
