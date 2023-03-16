@@ -1,0 +1,43 @@
+@import '@fontsource/nunito/400.css';
+@import '@fontsource/nunito/600.css';
+@import '@fontsource/nunito/800.css';
+@import '@fontsource/nunito/900.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  --scrollbarBG: #CFD8DC;
+  --thumbBG: #90A4AE;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  background: #fefefe;
+  color: #333;
+  font-family: "Nunito", sans-serif;
+}
+
+button {
+  border: none;
+}
+
+li {
+  list-style: none;
+}
+
+@media (min-resolution: 120dpi) {
+  html {
+    font-size: 80%;
+  }
+
+  canvas {
+    height: 512px;
+    width: 512px;
+  }
+}
