@@ -1,14 +1,10 @@
 <script>
   import Wheel from "../components/Wheel.svelte";
   import Item from "../components/Item.svelte";
+  import { getBrightness } from '../utils';
 
   let value = '';
   let items = [];
-
-  // move to utils?
-  const getBrightness = (r, g, b) => {
-    return (r * 0.299 + g * 0.587 + b *0.114) / 256;
-  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -41,13 +37,13 @@
 <main>
   <div>
     <Wheel { items } />
-    <aside>
+    <section>
       <form on:submit={handleSubmit}>
         <input bind:value placeholder="Type here..." />
         <button>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12.75l5 5 7-11" />
-          </svg>          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5.5v13m6.5-6.5h-13" />
+          </svg>
         </button>
       </form>
       <ul>
@@ -55,7 +51,7 @@
         <Item { item } { id } on:delete={rmInput} on:edit={editInput}/>
       {/each}
       </ul>
-    </aside>
+    </section>
   </div>
 </main>
 
@@ -78,7 +74,7 @@
     
   }
 
-  aside {
+  section {
     height: 40rem;
     padding: 2rem;
     display: flex;
