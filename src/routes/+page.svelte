@@ -71,10 +71,11 @@
     gap: 2rem;
     border: solid 0.25rem;
     border-radius: 1rem;
-    
+    overflow: hidden;
   }
 
   section {
+    margin: 0 1rem;
     height: 40rem;
     padding: 2rem;
     display: flex;
@@ -140,5 +141,15 @@
     background-color: var(--thumbBG) ;
     border: solid white 2px;
     border-radius: 6px;
+  }
+
+  @media (max-width: 640px) {
+    main {
+      padding: 0 0 2.5rem;
+    }
+
+    div {
+      border: none;
+    }
   }
 </style>
