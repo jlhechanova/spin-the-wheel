@@ -20,19 +20,16 @@
       ctx.translate(r, r);
   
       if (items.length > 0) {
+        let sliceSize = 2 * Math.PI / items.length; // radians
+
         for (let i = 0; i < items.length; i++) {
-          let sliceSize = 2 * Math.PI / items.length; // radians
-          let start = i * sliceSize;
-          let end = (i + 1) * sliceSize;
           ctx.fillStyle = `rgb(${items[i].color})`;
           ctx.beginPath();
           ctx.moveTo(0, 0);
-          ctx.arc(0, 0, r, start, end);
+          ctx.arc(0, 0, r, -sliceSize/2, sliceSize/2);
           ctx.closePath();
           ctx.fill();
 
-          ctx.save();
-          ctx.rotate(i * (end - start) + (end - start) / 2);
           ctx.font = "600 extra-condensed 2rem Nunito";
           ctx.textBaseline = "middle";
           ctx.fillStyle = `rgb(${items[i].textColor}`;
@@ -41,13 +38,26 @@
           if (textWidth < 244) {
             ctx.fillText(items[i].value, 300 - textWidth, 0);
           } else {
-            let k = 10;
-            while (ctx.measureText(items[i].value.slice(0,k)).width < 244) {
-              k += 1;
+            let j = 0;
+            let k = items[i].value.length - 1;
+            let ellipsisL = 244 - ctx.measureText('...').width;
+
+            // binary search for index l where [:l] width < 244 and [:l+1] width > 244
+            while (true) {
+              let l = Math.floor((j + k) / 2);
+              let L1 = ctx.measureText(items[i].value.slice(0,l)).width;
+              let L2 = ctx.measureText(items[i].value.slice(0,l+1)).width;  
+              if (L1 > ellipsisL && L2 > ellipsisL) {
+                k = l - 1;
+              } else if (L1 < ellipsisL && L2 < ellipsisL) {
+                j = l + 1;
+              } else {
+                ctx.fillText(items[i].value.slice(0, l) + '...', 56, 0);
+                break;
+              }
             }
-            ctx.fillText(items[i].value.slice(0, k-1) + '...', 56, 0);
           }
-          ctx.restore();
+          ctx.rotate(sliceSize);
         }
       }
       ctx.restore();
@@ -58,7 +68,7 @@
     if (items.length > 0) {
       let sliceSize = 360 / items.length; // degrees
       choice = Math.floor(Math.random() * items.length);
-      arc = 7200 + (items.length - choice - 1) * sliceSize + Math.random() * sliceSize;
+      arc = 7200 + (items.length - choice - 0.5 + Math.random()) * sliceSize;
       console.log(items[choice].value);
       isSpinning = true;
     }
