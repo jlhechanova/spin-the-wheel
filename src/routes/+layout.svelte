@@ -2,6 +2,10 @@
   import './styles.css';
 </script>
 
+<svelte:head>
+  <title>Spin the Wheel</title>
+</svelte:head>
+
 <header>
   Roulette
 </header>

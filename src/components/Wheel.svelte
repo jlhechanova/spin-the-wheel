@@ -103,7 +103,9 @@
       height="{canvasWidth ? canvasWidth : 640}"
       width="{canvasWidth ? canvasWidth : 640}"
       on:transitionend={handleTransitionEnd}
-    ></canvas>
+    >
+    This is a spin the wheel app, where you fill in your inputs then spin the wheel to get a random result from your given inputs.
+    </canvas>
   <div class="marker">
     <span class="top"></span>
   </div>
