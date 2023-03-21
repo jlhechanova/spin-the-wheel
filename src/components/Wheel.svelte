@@ -1,123 +1,133 @@
 <script>
-  import Modal from "./Modal.svelte";
+  import { createEventDispatcher } from "svelte";
   export let items;
 
   let canvas;
 
+  let innerHeight;
+  let innerWidth;
+  $: canvasWidth = Math.min(640, innerHeight - 60, innerWidth - 60);
+
   let isSpinning = false;
-  let choice = 0;
-  let arc = 90 * (Math.random() + 1);
+  let result = 0;
+  let rotation = 90 * (Math.random() + 1);
 
-  let showModal = false;
+  const dispatch = createEventDispatcher();
 
-  $: {
-    isSpinning = false;
-    arc = Math.random() * 360;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.save();
-      let r = canvas.width/2;
-      ctx.translate(r, r);
+  const drawWheel = () => {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    let r = canvas.width/2;
+    ctx.translate(r, r);
   
-      if (items.length > 0) {
-        let sliceSize = 2 * Math.PI / items.length; // radians
+    let sliceSize = 2 * Math.PI / items.length; // radians
 
-        for (let i = 0; i < items.length; i++) {
-          ctx.fillStyle = `rgb(${items[i].color})`;
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          ctx.arc(0, 0, r, -sliceSize/2, sliceSize/2);
-          ctx.closePath();
-          ctx.fill();
+    for (let i = 0; i < items.length; i++) {
+      ctx.fillStyle = `rgb(${items[i].color})`;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, r, -sliceSize/2, sliceSize/2);
+      ctx.closePath();
+      ctx.fill();
 
-          ctx.font = "600 extra-condensed 2rem Nunito";
-          ctx.textBaseline = "middle";
-          ctx.fillStyle = `rgb(${items[i].textColor}`;
+      ctx.font = "600 extra-condensed 2em Nunito, sans-serif";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = `rgb(${items[i].textColor}`;
 
-          let textWidth = ctx.measureText(items[i].value).width;
-          if (textWidth < 244) {
-            ctx.fillText(items[i].value, 300 - textWidth, 0);
+      let textSpace = r - 60; // accounts for offset from button and space after text
+      let textWidth = ctx.measureText(items[i].value).width;
+      // ctx.fillText(items[i].value, 48, 0, textSpace);
+      if (textWidth * 0.5 < textSpace) {
+        ctx.fillText(items[i].value, Math.max(r - 20 - textWidth, 48), 0, textSpace);
+      } else {
+        let j = 0;
+        let k = items[i].value.length - 1;
+        let l;
+        let ellipsisL = textSpace - ctx.measureText('...').width;
+
+        // binary search for index l where [:l] fits text space and [:l+1] doesnt
+        while (j < k) {
+          l = Math.floor((j + k) / 2);
+          let L1 = ctx.measureText(items[i].value.slice(0,l)).width * 0.5;
+          let L2 = ctx.measureText(items[i].value.slice(0,l+1)).width * 0.5;
+          if (L1 > ellipsisL && L2 > ellipsisL) {
+            k = l - 1;
+          } else if (L1 < ellipsisL && L2 < ellipsisL) {
+            j = l + 1;
           } else {
-            let j = 0;
-            let k = items[i].value.length - 1;
-            let ellipsisL = 244 - ctx.measureText('...').width;
-
-            // binary search for index l where [:l] width < 244 and [:l+1] width > 244
-            while (true) {
-              let l = Math.floor((j + k) / 2);
-              let L1 = ctx.measureText(items[i].value.slice(0,l)).width;
-              let L2 = ctx.measureText(items[i].value.slice(0,l+1)).width;  
-              if (L1 > ellipsisL && L2 > ellipsisL) {
-                k = l - 1;
-              } else if (L1 < ellipsisL && L2 < ellipsisL) {
-                j = l + 1;
-              } else {
-                ctx.fillText(items[i].value.slice(0, l) + '...', 56, 0);
-                break;
-              }
-            }
+            break;
           }
-          ctx.rotate(sliceSize);
         }
+        ctx.fillText(items[i].value.slice(0, l) + '...', 48, 0, textSpace);
       }
-      ctx.restore();
+      ctx.rotate(sliceSize);
     }
+    ctx.restore();
   }
 
   const handleClick = () => {
     if (items.length > 0) {
       let sliceSize = 360 / items.length; // degrees
-      choice = Math.floor(Math.random() * items.length);
-      arc = 7200 + (items.length - choice - 0.5 + Math.random()) * sliceSize;
-      console.log(items[choice].value);
+      result = Math.floor(Math.random() * items.length);
+      rotation = 7200 + (items.length - result - 0.5 + Math.random()) * sliceSize;
       isSpinning = true;
     }
   }
 
   const handleTransitionEnd = () => {
     isSpinning = false;
-    arc = arc % 360;
-    showModal = true;
+    rotation = rotation % 360;  
+    dispatch('result', {
+      result: items[result].value
+    })
   }
+
+  $: {
+    if (items && canvas) {
+      isSpinning = false;
+      rotation = Math.random() * 360;
+      requestAnimationFrame(drawWheel); // condition to draw on change in items
+    }
+  }
+
+  $: if (canvas && (innerHeight || innerWidth)) requestAnimationFrame(drawWheel); // condition to draw on window resize
 </script>
 
+<svelte:window bind:innerHeight bind:innerWidth />
+
 <div>
-  <canvas
-    bind:this={canvas}
-    style="{`transform: rotate(${arc}deg); ${isSpinning ? `transition: transform 10s cubic-bezier(0.25, -0.04, 0.2, 1.03)` : ''}`}"
-    height="640"
-    width="640"
-    on:transitionend={handleTransitionEnd}
-  ></canvas>
+    <canvas
+      bind:this={canvas}
+      style="{`transform: rotate(${rotation}deg); ${isSpinning ? `transition: transform 10s cubic-bezier(0.25, -0.04, 0.2, 1.03)` : ''}`}"
+      height="{canvasWidth ? canvasWidth : 640}"
+      width="{canvasWidth ? canvasWidth : 640}"
+      on:transitionend={handleTransitionEnd}
+    ></canvas>
+  <div class="marker">
+    <span class="top"></span>
+  </div>
   <button on:click={handleClick} disabled={isSpinning}>
     <span class="shadow"></span>
     <span class="top">
       SPIN
     </span>
   </button>
-  <div class="marker">
-    <span class="top"></span>
-  </div>
 </div>
-<Modal bind:showModal>
-  <h2 slot="header">
-    YOU GOT
-  </h2>
-  <div class="winnermodal">
-    <p class="winnertext">{items[choice]?.value}</p>
-  </div>
-</Modal>
 
 <style>
   div {
+    height: min-content;
+    width: min-content;
     position: relative;
-    border-radius: 100%;
+    border-radius: 50%;
   }
 
   canvas {
+    display: block;
+    background-color: #fff;
     border-style: solid;
-    border-radius: 100%;
+    border-radius: 50%;
     border-width: 0.125rem;
     box-shadow: 0 0 5px 2px #aaa;
     pointer-events: none;
@@ -129,7 +139,7 @@
     left: calc(50% - 2.5rem);
     height: 5rem;
     width: 5rem;
-    border-radius: 100%;
+    border-radius: 50%;
     outline: none;
     outline-offset: 0.25rem;
     background: hsl(340deg 100% 32%);
@@ -145,7 +155,7 @@
   }
 
   button:focus-visible {
-    outline: revert;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
   }
 
   button .top {
@@ -154,7 +164,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 100%;
+    border-radius: 50%;
     background: hsl(345deg 100% 47%);
     color: white;
     transform: translateY(-0.375rem);
@@ -168,9 +178,9 @@
     left: 0;
     width: 100%;
     height: 100%;
-    border-radius: 100%;
+    border-radius: 50%;
     background: hsl(0deg 0% 0% / 0.25);
-    transform: translateY(0.125rem);
+    transform: translateY(0.0625rem);
     transition: transform 250ms;
   }
 
@@ -192,54 +202,39 @@
 
   .marker {
     position: absolute;
-    top: calc(50% - 2rem);
-    right: -1.5rem;
+    top: calc(50% - 1rem);
+    right: -0.875rem;
     box-sizing: content-box;
     height: 0;
     width: 0;
-    border-radius: 100%;
-    border-top: 2rem solid transparent;
-    border-bottom: 2rem solid transparent;
+    border-radius: 50%;
+    border-top: 1rem solid transparent;
+    border-bottom: 1rem solid transparent;
     border-right: 4rem solid darkgreen;
-  }
+  } 
 
   .marker .top {
     box-sizing: content-box;
     display: block;
     height: 0;
     width: 0;
-    border-radius: 100%;
-    border-top: 2rem solid transparent;
-    border-bottom: 2rem solid transparent;
+    border-radius: 50%;
+    border-top: 1rem solid transparent;
+    border-bottom: 1rem solid transparent;
     border-right: 4rem solid green;
-    transform: translateY(-2.125rem);
+    transform: translateY(-1.125rem);
   }
 
-  h2 {
-    text-align: center;
-  }
+  @media not all and (min-width: 390px) {
+    canvas {
+      font-size: 12px;
+    }
 
-  .winnermodal {
-    min-height: 12rem;
-    min-width: 32rem;
-    max-width: 44rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    button {
+      top: calc(50% - 2rem);
+      left: calc(50% - 2rem);
+      height: 4rem;
+      width: 4rem;
+    }
   }
-
-  .winnertext {
-    font-size: 5rem;
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.0375em;
-    text-align: center;
-  }
-
-  @media (min-resolution: 120dpi) {
-  canvas {
-    height: 480px;
-    width: 480px;
-  }
-}
 </style>

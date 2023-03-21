@@ -40,6 +40,7 @@
 
 <style>
   li {
+    width: 100%;
     display: flex;
     justify-content: center;
     gap: 1rem;
@@ -49,6 +50,12 @@
     vertical-align: middle;
   }
 
+  form {
+    width: 100%;
+    display: flex;
+    flex-grow: 1; 
+  }
+
   form button {
     display: none;
   }
@@ -56,7 +63,9 @@
   input {
     padding: 0 1rem;
     height: 2.5rem;
-    width: 20rem;
+    width: 100%;
+    max-width: 20rem;
+    flex-grow: 1;
     border: none;
     border-radius: 0.75rem;
     outline: none;
@@ -74,8 +83,10 @@
   li > button {
     height: 2.5rem;
     width: 2.5rem;
+    flex-shrink: 0;
     border-radius: 0.5rem;
     vertical-align: middle;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
   }
 
   li > button:hover {

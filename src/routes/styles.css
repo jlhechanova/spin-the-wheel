@@ -18,7 +18,7 @@ html {
 body {
   height: 100%;
   margin: 0;
-  background: #fefefe;
+  background: #f9fafb;
   color: #333;
   font-family: "Nunito", sans-serif;
 }
@@ -29,15 +29,4 @@ button {
 
 li {
   list-style: none;
-}
-
-@media (min-resolution: 120dpi) {
-  html {
-    font-size: 80%;
-  }
-
-  canvas {
-    height: 512px;
-    width: 512px;
-  }
 }

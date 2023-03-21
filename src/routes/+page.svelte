@@ -1,10 +1,14 @@
 <script>
   import Wheel from "../components/Wheel.svelte";
   import Item from "../components/Item.svelte";
+  import Modal from "../components/Modal.svelte";
   import { getBrightness } from '../utils';
 
   let value = '';
   let items = [];
+
+  let result;
+  let showModal = false;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -32,69 +36,77 @@
       return item;
     })
   }
+
+  const handleResult = (e) => {
+    result = e.detail.result;
+    showModal = true;
+  }
 </script>
 
 <main>
-  <div>
-    <Wheel { items } />
-    <section>
-      <form on:submit={handleSubmit}>
-        <input bind:value placeholder="Type here..." />
-        <button>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5.5v13m6.5-6.5h-13" />
-          </svg>
-        </button>
-      </form>
-      <ul>
-      {#each items as item, id (item.value + item.color)}
-        <Item { item } { id } on:delete={rmInput} on:edit={editInput}/>
-      {/each}
-      </ul>
-    </section>
-  </div>
+  <Wheel { items } on:result={handleResult}/>
+  <section>
+    <form on:submit={handleSubmit}>
+      <input bind:value placeholder="Type here..." />
+      <button>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 5.5v13m6.5-6.5h-13" />
+        </svg>
+      </button>
+    </form>
+    <ul>
+    {#each items as item, id (item.value + item.color)}
+      <Item { item } { id } on:delete={rmInput} on:edit={editInput}/>
+    {/each}
+    </ul>
+  </section>
 </main>
+
+<Modal bind:showModal>
+  <h2 slot="header">
+    YOU GOT
+  </h2>
+  <div class="winnermodal">
+    <p class="winnertext">{result}</p>
+  </div>
+</Modal>
 
 <style>
   main {
-    padding: 2.5rem;
-  }
-
-  div {
     margin: auto;
-    padding: 2rem;
+    padding: 1rem;
     max-width: 80rem;
     display: flex;
-    justify-content: space-around;
-    align-items: center;
+    justify-content: center;
     flex-wrap: wrap;
-    gap: 2rem;
-    border: solid 0.25rem;
+    gap: 1rem;
     border-radius: 1rem;
     overflow: hidden;
   }
 
   section {
-    margin: 0 1rem;
-    height: 40rem;
-    padding: 2rem;
+    width: 24rem;
+    min-height: 12rem;
+    padding: 1.5rem 1rem;
     display: flex;
     flex-direction: column;
     border-radius: 0.5rem;
-    box-shadow: 0 8px 12px 2px rgb(0 0 0 / 0.1);;
+    background-color: #fff;
+    box-shadow: 0 8px 12px 2px rgb(0 0 0 / 0.1);
   }
 
   form {
+    width: 100%;
     display: flex;
-    justify-content: space-around;
-
+    justify-content: center;
     gap: 1rem;
   }
 
   input {
     padding: 0 1.25rem;
     height: 3rem;
-    width: 20rem;
+    width: 100%;
+    max-width: 20rem;
     border-radius: 0.75rem;
     outline: none;
     font-family: inherit;
@@ -114,8 +126,10 @@
   button {
     height: 3rem;
     width: 3rem;
+    flex-shrink: 0;
     border-radius: 0.75rem;
     vertical-align: middle;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
   }
 
   button:hover {
@@ -129,7 +143,6 @@
     flex-direction: column;
     gap: 0.375rem;
     flex-grow: 1;
-    overflow-y: scroll;
     scrollbar-width: thin;
   }
 
@@ -143,13 +156,59 @@
     border-radius: 6px;
   }
 
-  @media (max-width: 640px) {
-    main {
-      padding: 0 0 2.5rem;
+  
+  h2 {
+    text-align: center;
+  }
+
+  .winnermodal {
+    min-height: 10rem;
+    width: 32rem;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    inline-size: 100%;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .winnertext {
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.0375em;
+    text-align: center;
+  }
+
+  @media all and (min-width: 1100px) {
+    section {
+      max-height: 40rem;
     }
 
-    div {
-      border: none;
+    ul {
+      overflow-y: scroll;
+    }
+
+    .winnermodal {
+    max-width: 44rem;
+  }
+  }
+
+  @media all and (min-width: 390px) {
+    main {
+      padding: 2rem 1rem;
+      gap: 2rem;
+    }
+
+    section {
+      padding: 2rem;
+    }
+
+    .winnertext {
+      font-size: 5rem;
+      font-weight: 800;
+      letter-spacing: -0.0375em;
     }
   }
 </style>
