@@ -49,7 +49,7 @@
     <form on:submit={handleSubmit}>
       <input bind:value placeholder="Type here..." />
       <button>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-6 h-6">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 5.5v13m6.5-6.5h-13" />
         </svg>
       </button>
@@ -168,7 +168,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    inline-size: 100%;
     overflow-wrap: break-word;
     word-break: break-word;
   }
@@ -191,8 +190,8 @@
     }
 
     .winnermodal {
-    max-width: 44rem;
-  }
+      max-width: 44rem;
+    }
   }
 
   @media all and (min-width: 390px) {
