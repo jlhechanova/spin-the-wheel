@@ -1,78 +1,82 @@
 <script>
-  import { onMount } from 'svelte';
   import { createEventDispatcher } from "svelte";
   export let items;
 
   let canvas;
-  
-  // set font for future draws, avoids wrong font at first draw.
-  onMount(() => {
-    const ctx = canvas.getContext('2d');
-    ctx.font = "600 extra-condensed 2em Nunito, sans-serif";
-    ctx.textBaseline = "middle";
-    ctx.fillText('',0,0);
-  })
 
   let innerHeight;
   let innerWidth;
-  $: canvasWidth = Math.min(640, innerHeight - 60, innerWidth - 60);
+  $: canvasWidth = Math.min(640, innerHeight - 48, innerWidth - 48);
 
   let isSpinning = false;
   let result = 0;
   let rotation = 90 * (Math.random() + 1);
-
-  const dispatch = createEventDispatcher();
-
+  
   const drawWheel = () => {
+    if (!isSpinning) rotation = rotation % 360;
+
     const ctx = canvas.getContext('2d');
+
+    ctx.font = "600 extra-condensed 2em Nunito, sans-serif";
+    ctx.fillText('',0,0); // initial draw loads font for future draws
+    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
-    let r = canvas.width/2;
-    ctx.translate(r, r);
-  
+    let radius = canvas.width/2;
+    ctx.translate(radius, radius);
+    
     let sliceSize = 2 * Math.PI / items.length; // radians
-
+    
     for (let i = 0; i < items.length; i++) {
       ctx.fillStyle = `rgb(${items[i].color})`;
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.arc(0, 0, r, -sliceSize/2, sliceSize/2);
+      ctx.arc(0, 0, radius, -sliceSize/2, sliceSize/2);
       ctx.closePath();
       ctx.fill();
-
+      
+      ctx.font = "600 extra-condensed 2em Nunito, sans-serif";
+      ctx.textBaseline = "middle";
       ctx.fillStyle = `rgb(${items[i].textColor}`;
+      
+      let buttonRadius = canvasWidth < 342 ? 32 : 40;
+      let text = items[i].value;
+      let textWidth = ctx.measureText(text).width;
+      let textSpace = radius - buttonRadius - 16; // accounts for offset from button and space after text
+      let l = text.length - 1;
 
-      let textSpace = r - 60; // accounts for offset from button and space after text
-      let textWidth = ctx.measureText(items[i].value).width;
-      // ctx.fillText(items[i].value, 48, 0, textSpace);
-      if (textWidth * 0.5 < textSpace) {
-        ctx.fillText(items[i].value, Math.max(r - 20 - textWidth, 48), 0, textSpace);
-      } else {
-        let j = 0;
-        let k = items[i].value.length - 1;
-        let l;
-        let ellipsisL = textSpace - ctx.measureText('...').width;
+      if (textWidth * 0.75 > textSpace) {
+        ctx.font = "600 extra-condensed 1.5em Nunito, sans-serif";
+        textWidth = ctx.measureText(text).width;
 
-        // binary search for index l where [:l] fits text space and [:l+1] doesnt
-        while (j < k) {
-          l = Math.floor((j + k) / 2);
-          let L1 = ctx.measureText(items[i].value.slice(0,l)).width * 0.5;
-          let L2 = ctx.measureText(items[i].value.slice(0,l+1)).width * 0.5;
-          if (L1 > ellipsisL && L2 > ellipsisL) {
-            k = l - 1;
-          } else if (L1 < ellipsisL && L2 < ellipsisL) {
-            j = l + 1;
-          } else {
-            break;
+        if (textWidth * 0.75 > textSpace) {
+          let j = 0;
+          let k = l;
+          let ellipsisL = textSpace - ctx.measureText('...').width;
+          
+          // binary search for index l where [:l] fits text space and [:l+1] doesnt
+          while (j < k) {
+            l = Math.floor((j + k) / 2);
+            let L1 = ctx.measureText(text.slice(0,l)).width * 0.75;
+            let L2 = ctx.measureText(text.slice(0,l+1)).width * 0.75;
+            if (L1 > ellipsisL && L2 > ellipsisL) {
+              k = l - 1;
+            } else if (L1 < ellipsisL && L2 < ellipsisL) {
+              j = l + 1;
+            } else {
+              break;
+            }
           }
         }
-        ctx.fillText(items[i].value.slice(0, l) + '...', 48, 0, textSpace);
       }
+      ctx.fillText(l === text.length - 1 ? text : text.slice(0, l) + '...',
+          Math.max(radius - 20 - textWidth, buttonRadius + 8), 0,
+          textSpace);
       ctx.rotate(sliceSize);
     }
     ctx.restore();
   }
-
+  
   const handleClick = () => {
     if (items.length > 0) {
       let sliceSize = 360 / items.length; // degrees
@@ -82,23 +86,24 @@
     }
   }
 
+  const dispatch = createEventDispatcher();
+  
   const handleTransitionEnd = () => {
     isSpinning = false;
-    rotation = rotation % 360;  
+    rotation = rotation % 360;
     dispatch('result', {
-      result: items[result].value
+      result: result
     })
   }
-
+  
   $: {
     if (items && canvas) {
       isSpinning = false;
-      rotation = Math.random() * 360;
       requestAnimationFrame(drawWheel); // condition to draw on change in items
     }
   }
 
-  $: if (canvas && (innerHeight || innerWidth)) requestAnimationFrame(drawWheel); // condition to draw on window resize
+  $: if (canvas && innerWidth) requestAnimationFrame(drawWheel); // condition to draw on window resize
 </script>
 
 <svelte:window bind:innerHeight bind:innerWidth />

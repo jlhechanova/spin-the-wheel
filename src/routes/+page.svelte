@@ -17,21 +17,21 @@
       items = [...items, {
         value: value.trim(),
         color: `${r},${g},${b}`,
-        textColor: getBrightness(r, g, b) < 0.55 ? '255,255,255' : '0,0,0'
+        textColor: getBrightness(r, g, b) < 0.55 ? '255,255,255' : '0,0,0',
+        isHidden: false
       }];
       value = '';
     }
   }
 
-  const rmInput = (e) => {
-    items = items.filter((item, i) => i !== e.detail.id);
+  const rmInput = (id) => {
+    items = items.filter((item, i) => i !== id);
   }
 
-  const editInput = (e) => {
-    const { id, value } = e.detail;
+  const editInput = (id, newItem) => {
     items = items.map((item, i) => {
       if (i === id) {
-        item.value = value;
+        return newItem;
       }
       return item;
     })
@@ -41,10 +41,16 @@
     result = e.detail.result;
     showModal = true;
   }
+
+  const handleHideChoice = () => {
+    items[result].isHidden = true;
+    items = items;
+    showModal = false;
+  }
 </script>
 
 <main>
-  <Wheel { items } on:result={handleResult}/>
+  <Wheel items={items.filter(item => !item.isHidden)} on:result={handleResult}/>
   <section>
     <form on:submit={handleSubmit}>
       <input bind:value placeholder="Type here..." />
@@ -56,7 +62,7 @@
     </form>
     <ul>
     {#each items as item, id (item.value + item.color)}
-      <Item { item } { id } on:delete={rmInput} on:edit={editInput}/>
+      <Item { item } { id } {rmInput} {editInput}/>
     {/each}
     </ul>
   </section>
@@ -67,14 +73,15 @@
     YOU GOT
   </h2>
   <div class="winnermodal">
-    <p class="winnertext">{result}</p>
+    <p class="winnertext">{items[result]?.value}</p>
   </div>
+  <button on:click={handleHideChoice}>Hide Choice</button>
 </Modal>
 
 <style>
   main {
     margin: auto;
-    padding: 1rem;
+    padding: 1rem 0.5rem;
     max-width: 80rem;
     display: flex;
     justify-content: center;
@@ -104,7 +111,7 @@
 
   input {
     padding: 0 1.25rem;
-    height: 3rem;
+    height: 2.5rem;
     width: 100%;
     max-width: 20rem;
     border-radius: 0.75rem;
@@ -123,25 +130,25 @@
     background-color: revert;
   }
 
-  button {
-    height: 3rem;
-    width: 3rem;
+  form button {
+    height: 2.5rem;
+    width: 2.5rem;
     flex-shrink: 0;
     border-radius: 0.75rem;
     vertical-align: middle;
     filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
   }
 
-  button:hover {
+  form button:hover {
     cursor: pointer;
   }
 
   ul {
-    margin-top: 0.5rem;
+    margin-top: 1rem;
     padding-right: 0.25rem;
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
+    gap: 0.5rem;
     flex-grow: 1;
     scrollbar-width: thin;
   }
@@ -166,18 +173,31 @@
     width: 32rem;
     max-width: 100%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     overflow-wrap: break-word;
     word-break: break-word;
   }
 
-  .winnertext {
-    font-size: 4rem;
+  .winnermodal p {
+    font-size: 3.5rem;
     font-weight: 600;
     line-height: 1;
     letter-spacing: -0.0375em;
     text-align: center;
+  }
+
+  .winnermodal + button {
+    display: block;
+    margin: 0.25rem auto 0;
+    height: 2.5rem;
+    width: 10rem;
+    border-radius: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-family: inherit;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.15)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.08));
   }
 
   @media all and (min-width: 1100px) {
@@ -186,7 +206,7 @@
     }
 
     ul {
-      overflow-y: scroll;
+      overflow-y: auto;
     }
 
     .winnermodal {
@@ -204,10 +224,23 @@
       padding: 2rem;
     }
 
-    .winnertext {
-      font-size: 5rem;
+    input {
+      height: 3rem;
+    }
+
+    form button {
+      height: 3rem;
+      width: 3rem;
+    }
+
+    .winnermodal p {
+      font-size: 4rem;
       font-weight: 800;
-      letter-spacing: -0.0375em;
+    }
+
+    .winnermodal + button {
+      height: 3rem;
+      font-size: 1.5rem;
     }
   }
 </style>
