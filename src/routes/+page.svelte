@@ -1,56 +1,45 @@
-<script>
-  import Wheel from "../components/Wheel.svelte";
-  import Item from "../components/Item.svelte";
-  import Modal from "../components/Modal.svelte";
-  import { getBrightness } from '../utils';
+<script lang="ts">
+  import { items } from "$lib/stores";
+  import Wheel from "$lib/components/Wheel.svelte";
+  import Item from "$lib/components/Item.svelte";
+  import Modal from "$lib/components/Modal.svelte";
+  import { getBrightness } from '$lib/utils';
 
   let value = '';
-  let items = [];
 
-  let result;
+  let result: number;
   let showModal = false;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault();
     if (value.length > 0) {
-      const r = Math.random() * 255, g = Math.random() * 255, b = Math.random() * 255;
-      items = [...items, {
+      const r = Math.random() * 255;
+      const g = Math.random() * 255;
+      const b = Math.random() * 255;
+      items.add({
         value: value.trim(),
         color: `${r},${g},${b}`,
         textColor: getBrightness(r, g, b) < 0.55 ? '255,255,255' : '0,0,0',
         isHidden: false
-      }];
+      });
       value = '';
     }
   }
 
-  const rmInput = (id) => {
-    items = items.filter((item, i) => i !== id);
-  }
-
-  const editInput = (id, newItem) => {
-    items = items.map((item, i) => {
-      if (i === id) {
-        return newItem;
-      }
-      return item;
-    })
-  }
-
-  const handleResult = (e) => {
+  const handleResult = (e: CustomEvent<{ result: number }>) => {
     result = e.detail.result;
     showModal = true;
   }
 
   const handleHideChoice = () => {
-    items[result].isHidden = true;
-    items = items;
+    let item = $items[result];
+    items.edit(result, {...item, isHidden: true});
     showModal = false;
   }
 </script>
 
 <main>
-  <Wheel items={items.filter(item => !item.isHidden)} on:result={handleResult}/>
+  <Wheel on:result={handleResult}/>
   <section>
     <form on:submit={handleSubmit}>
       <input bind:value placeholder="Type here..." />
@@ -61,8 +50,8 @@
       </button>
     </form>
     <ul>
-    {#each items as item, id (item.value + item.color)}
-      <Item { item } { id } {rmInput} {editInput}/>
+    {#each $items as item, id (item.value + item.color)}
+      <Item { item } { id }/>
     {/each}
     </ul>
   </section>
@@ -73,7 +62,7 @@
     YOU GOT
   </h2>
   <div class="winnermodal">
-    <p class="winnertext">{items[result]?.value}</p>
+    <p class="winnertext">{$items[result]?.value}</p>
   </div>
   <button on:click={handleHideChoice}>Hide Choice</button>
 </Modal>
@@ -198,6 +187,10 @@
     font-weight: 600;
     font-family: inherit;
     filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.15)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.08));
+  }
+
+  .winnermodal + button:hover {
+    cursor: pointer;
   }
 
   @media all and (min-width: 1100px) {

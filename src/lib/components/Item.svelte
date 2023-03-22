@@ -1,8 +1,8 @@
-<script>
-  export let rmInput;
-  export let editInput;
-  export let item;
-  export let id;
+<script lang="ts">
+  import { items } from "$lib/stores";
+  import type { Item } from "$lib/types";
+  export let item: Item;
+  export let id: number;
   
   let value = item.value;
 </script>
@@ -11,17 +11,17 @@
   <form
     on:submit={(e) => {
       e.preventDefault();
-      editInput(id, {...item, value: value})
+      items.edit(id, {...item, value: value})
     }}
   >
     <input
       bind:value
       style:background-color={`rgb(${item.color})`}
       style:color={`rgb(${item.textColor})`}
-      on:blur={() => editInput(id, {...item, value: value})}/>
+      on:blur={() => items.edit(id, {...item, value: value})}/>
     <button />
   </form>
-  <button style:padding={"0.4rem"} on:click={() => editInput(id, {...item, isHidden: !item.isHidden})}>
+  <button style:padding={"0.4rem"} on:click={() => items.edit(id, {...item, isHidden: !item.isHidden})}>
     {#if !item.isHidden}
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.25" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -33,7 +33,7 @@
     </svg>
     {/if}
   </button>
-  <button on:click={() => rmInput(id)}>
+  <button on:click={() => items.delete(id)}>
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>

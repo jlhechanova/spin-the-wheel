@@ -1,7 +1,7 @@
-<script>
-	export let showModal; // boolean
+<script lang="ts">
+	export let showModal = false;
 
-	let dialog; // HTMLDialogElement
+	let dialog: HTMLDialogElement;
 
 	$: {
     if (dialog) {
@@ -19,7 +19,7 @@
 >
 	<div on:click|stopPropagation>
 		<!-- svelte-ignore a11y-autofocus -->
-		<button autofocus on:click={() => dialog.close()}>
+		<button autofocus on:click={() => showModal = false}>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" d="M8 16L16 8M8 8L16 16" />
       </svg>

@@ -1,34 +1,34 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
-  export let items;
+  import { shownItems as items } from "$lib/stores";
 
-  let canvas;
+  let canvas: HTMLCanvasElement;
 
-  let innerHeight;
-  let innerWidth;
+  let innerHeight: number;
+  let innerWidth: number;
   $: canvasWidth = Math.min(640, innerHeight - 48, innerWidth - 48);
 
   let isSpinning = false;
   let result = 0;
   let rotation = 90 * (Math.random() + 1);
   
-  const drawWheel = () => {
+  const drawWheel = () => {    
     if (!isSpinning) rotation = rotation % 360;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d')!;
 
     ctx.font = "600 extra-condensed 2em Nunito, sans-serif";
-    ctx.fillText('',0,0); // initial draw loads font for future draws
+    ctx.fillText('',0,0); // initial fillText loads font for future draws
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     let radius = canvas.width/2;
     ctx.translate(radius, radius);
+
+    let sliceSize = 2 * Math.PI / $items.length; // radians
     
-    let sliceSize = 2 * Math.PI / items.length; // radians
-    
-    for (let i = 0; i < items.length; i++) {
-      ctx.fillStyle = `rgb(${items[i].color})`;
+    for (let i = 0; i < $items.length; i++) {
+      ctx.fillStyle = `rgb(${$items[i].color})`;
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.arc(0, 0, radius, -sliceSize/2, sliceSize/2);
@@ -37,10 +37,10 @@
       
       ctx.font = "600 extra-condensed 2em Nunito, sans-serif";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = `rgb(${items[i].textColor}`;
+      ctx.fillStyle = `rgb(${$items[i].textColor}`;
       
       let buttonRadius = canvasWidth < 342 ? 32 : 40;
-      let text = items[i].value;
+      let text = $items[i].value;
       let textWidth = ctx.measureText(text).width;
       let textSpace = radius - buttonRadius - 16; // accounts for offset from button and space after text
       let l = text.length - 1;
@@ -78,10 +78,10 @@
   }
   
   const handleClick = () => {
-    if (items.length > 0) {
-      let sliceSize = 360 / items.length; // degrees
-      result = Math.floor(Math.random() * items.length);
-      rotation = 7200 + (items.length - result - 0.5 + Math.random()) * sliceSize;
+    if ($items.length > 0) {
+      let sliceSize = 360 / $items.length; // degrees
+      result = Math.floor(Math.random() * $items.length);
+      rotation = 10800 + ($items.length - result - 0.5 + Math.random()) * sliceSize;
       isSpinning = true;
     }
   }
@@ -92,12 +92,12 @@
     isSpinning = false;
     rotation = rotation % 360;
     dispatch('result', {
-      result: result
+      result: $items[result].id
     })
   }
   
   $: {
-    if (items && canvas) {
+    if ($items && canvas) {
       isSpinning = false;
       requestAnimationFrame(drawWheel); // condition to draw on change in items
     }
@@ -111,7 +111,7 @@
 <div>
     <canvas
       bind:this={canvas}
-      style="{`transform: rotate(${rotation}deg); ${isSpinning ? `transition: transform 10s cubic-bezier(0.25, -0.04, 0.2, 1.03)` : ''}`}"
+      style="{`transform: rotate(${rotation}deg); ${isSpinning ? `transition: transform 10s cubic-bezier(0.25, -0.05, 0.2, 1.03)` : ''}`}"
       height="{canvasWidth ? canvasWidth : 640}"
       width="{canvasWidth ? canvasWidth : 640}"
       on:transitionend={handleTransitionEnd}
