@@ -1,8 +1,17 @@
 <script>
+  import { onMount } from 'svelte';
   import { createEventDispatcher } from "svelte";
   export let items;
 
   let canvas;
+  
+  // set font for future draws, avoids wrong font at first draw.
+  onMount(() => {
+    const ctx = canvas.getContext('2d');
+    ctx.font = "600 extra-condensed 2em Nunito, sans-serif";
+    ctx.textBaseline = "middle";
+    ctx.fillText('',0,0);
+  })
 
   let innerHeight;
   let innerWidth;
@@ -31,8 +40,6 @@
       ctx.closePath();
       ctx.fill();
 
-      ctx.font = "600 extra-condensed 2em Nunito, sans-serif";
-      ctx.textBaseline = "middle";
       ctx.fillStyle = `rgb(${items[i].textColor}`;
 
       let textSpace = r - 60; // accounts for offset from button and space after text

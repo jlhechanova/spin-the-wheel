@@ -174,7 +174,7 @@
 
   .winnertext {
     font-size: 4rem;
-    font-weight: 800;
+    font-weight: 600;
     line-height: 1;
     letter-spacing: -0.0375em;
     text-align: center;
