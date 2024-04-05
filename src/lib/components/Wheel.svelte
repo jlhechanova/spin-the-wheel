@@ -1,6 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { shownItems as items } from "$lib/stores";
+  import FontFaceObserver from "fontfaceobserver";
+
+  let loadedfont = false;
+  let f = new FontFaceObserver('Nunito');
+  f.load().then(() => loadedfont = true);
 
   let canvas: HTMLCanvasElement;
 
@@ -18,7 +23,6 @@
     const ctx = canvas.getContext('2d')!;
 
     ctx.font = "600 extra-condensed 2em Nunito, sans-serif";
-    ctx.fillText('',0,0); // initial fillText loads font for future draws
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
@@ -97,13 +101,13 @@
   }
   
   $: {
-    if ($items && canvas) {
+    if ($items && canvas && loadedfont) {
       isSpinning = false;
       requestAnimationFrame(drawWheel); // condition to draw on change in items
     }
   }
 
-  $: if (canvas && innerWidth) requestAnimationFrame(drawWheel); // condition to draw on window resize
+  $: if (canvas && innerWidth && loadedfont) requestAnimationFrame(drawWheel); // condition to draw on window resize
 </script>
 
 <svelte:window bind:innerHeight bind:innerWidth />

@@ -2,7 +2,8 @@ import { writable, derived } from "svelte/store";
 import type { Item } from "$lib/types";
 
 export const items = (() => {
-  const { subscribe, update } = writable<Item[]>([]);
+  const local = localStorage.getItem("items");
+  const { subscribe, update } = writable<Item[]>(local ? JSON.parse(local) : []);
 
   return {
     subscribe,
@@ -11,6 +12,8 @@ export const items = (() => {
     edit: (id: number, newItem: Item) => update(items => items.map((item, i) => i === id ? newItem : item))
   }
 })();
+
+items.subscribe(v => localStorage.setItem("items", JSON.stringify(v)));
 
 export const shownItems = derived(
   items,
